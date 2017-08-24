@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="error" monitorInterval="3600" packages="com.winning.jiandan.log"><!-- 指定扩展插件的包 -->
+
+    <Properties>
+        <Property name="patternLayout">%d{DEFAULT} [%-5level] %class{36}-%method:%line -%n           %msg%n%xEx</Property>
+    </Properties>
+
+    <appenders>
+        <!-- 控制台的日志输出，开发环境使用 -->
+        <Console name="console" target="SYSTEM_OUT"><!-- 默认为SYSTEM_ERR -->
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" /><!-- 控制在debug以上级别 -->
+                <MarkerFilter marker="rewrite" onMatch="DENY" onMismatch="ACCEPT"/><!-- 不处理rewrite标记的日志 -->
+            </Filters>
+            <PatternLayout pattern="${patternLayout}"/><!--%x{req_ip}  -->
+        </Console>
+
+        <!-- 这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <!--<RollingFile name="monitorRollingFile" fileName="logs/log/monitor.log"-->
+                     <!--filePattern="logs/log/$${date:yyyy-MM}/monitor-%d{MM-dd-yyyy}-%i.log.gz">-->
+            <!--<Filters>-->
+                <!--<ThresholdFilter level="INFO" onMatch="NEUTRAL" onMismatch="DENY" />&lt;!&ndash; 控制在INFO以上级别 &ndash;&gt;-->
+                <!--<MarkerFilter marker="monitor" onMatch="ACCEPT" onMismatch="DENY"/>&lt;!&ndash; 只处理monitor标记的日志 &ndash;&gt;-->
+            <!--</Filters>-->
+            <!--<PatternLayout pattern="${patternLayout}"/>-->
+            <!--<SizeBasedTriggeringPolicy size="20MB"/>-->
+            <!--&lt;!&ndash; DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件，这里设置了20 &ndash;&gt;-->
+            <!--<DefaultRolloverStrategy max="20"/>-->
+        <!--</RollingFile>-->
+
+        <!-- 文件形式的日志输出（每次启动时覆盖写入文件），开发或测试使用 -->
+        <!-- 使用web lookup可以指定文件存放到应用部署的根路径下。注意$表示初始化时一次性取值，$$表示动态决定值 -->
+        <File name="logfile" fileName="${log4j:configParentLocation}/log/jiandan-log.html" append="false">
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" />
+            </Filters>
+            <HTMLLayout title="jiandan-log" charset="UTF-8"/>
+        </File>
+        <!-- 这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="rollingFile" fileName="logs/log/error.log"
+                     filePattern="logs/log/$${date:yyyy-MM}/error-%d{MM-dd-yyyy}-%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY" /><!-- 控制在INFO以上级别 -->
+            </Filters>
+            <PatternLayout pattern="${patternLayout}"/>
+            <SizeBasedTriggeringPolicy size="10MB"/>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件，这里设置了20 -->
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+
+    </appenders>
+
+    <loggers>
+        <root level="TRACE">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logfile"/>
+            <AppenderRef ref="rollingFile"/>
+        </root>
+
+        <!-- log4j提供的用于输出MDC日志的Logger。 EventLogger.logEvent方法的输出内容将使用该日志方案  -->
+        <Logger name="EventLogger" level="DEBUG" additivity="false">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logfile"/>
+        </Logger>
+
+        <Logger name="org.springframework" level="INFO" additivity="false">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logfile"/>
+        </Logger>
+
+        <!-- 如果希望查看Mybatis扫描了哪些bean，可以放开该日志 -->
+        <Logger name="org.apache.ibatis.io.ResolverUtil" level="ERROR" additivity="false">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logfile"/>
+        </Logger>
+
+        <Logger name="org.apache.commons.beanutils" level="ERROR" additivity="false">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logfile"/>
+        </Logger>
+    </loggers>
+</configuration>
